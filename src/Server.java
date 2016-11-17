@@ -1,4 +1,3 @@
-package assignm2;
 import java.net.*;
 import java.net.ServerSocket;
 import java.io.*;
