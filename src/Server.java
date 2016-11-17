@@ -1,10 +1,12 @@
 import java.net.*;
 import java.net.ServerSocket;
+import java.util.ArrayList;
 import java.io.*;
 
 public class Server {
 
     public static void main(String[] args) throws IOException {
+        ArrayList<MultipleServer> clientList = new ArrayList<MultipleServer>();
 
         // if statement to check that port number is valid
         if (args.length != 1) {
@@ -19,14 +21,14 @@ public class Server {
             // start them as new threads
             while(true){
                 Socket clientSocket = serverSocket.accept();
-                MultipleServer multiSever = new MultipleServer(clientSocket);
-                multiSever.start();
+                clientList.add(new MultipleServer(clientSocket));
+                clientList.get(clientList.size() - 1).start();
             } // end of while loop
         } catch (IOException e) {
             System.err.println("Unable to reach port " + portNum);
             System.exit(1);
         } // end of IOException catch
-	} // end of main() method
+    } // end of main() method
 
 }
 
@@ -44,6 +46,8 @@ class MultipleServer extends Thread {
             InputStreamReader streamReader = new InputStreamReader(multiSocket.getInputStream());
             BufferedReader bReader = new BufferedReader(streamReader);
         ){
+            String test = "test";
+            pWriter.println(test);
 
         } catch (IOException e){
             e.printStackTrace();
