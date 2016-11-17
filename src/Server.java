@@ -39,9 +39,15 @@ class MultipleServer extends Thread {
     } // end of CONSTRUCTOR
 
     public void run(){
-        PrintWriter pWriter = new PrintWriter(multiSocket.getOutputStream(), true);
-        InputStreamReader streamReader = new InputStreamReader(multiSocket.getInputStream());
-        BufferedReader bReader = new BufferedReader(streamReader);
+        try(
+            // setup I/O streams to be able to send/receive data from client
+            PrintWriter pWriter = new PrintWriter(multiSocket.getOutputStream(), true);
+            InputStreamReader streamReader = new InputStreamReader(multiSocket.getInputStream());
+            BufferedReader bReader = new BufferedReader(streamReader);
+        ){
 
-    }
-}
+        } catch (IOException e){
+            e.printStackTrace();
+        } // end of IOException catch
+    } // end of run() method
+} // end of MultipleServer Class
