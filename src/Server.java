@@ -1,3 +1,4 @@
+// ----- IMPORT STATEMENTS -----
 import java.net.*;
 import java.net.ServerSocket;
 import java.util.ArrayList;
@@ -42,9 +43,9 @@ class MultipleServer extends Thread {
     public void run(){
         try(
             // setup I/O streams to be able to send/receive data from client
-            PrintWriter pWriter = new PrintWriter(multiSocket.getOutputStream(), true);
-            InputStreamReader streamReader = new InputStreamReader(multiSocket.getInputStream());
-            BufferedReader bReader = new BufferedReader(streamReader);
+            PrintWriter serverWriter = new PrintWriter(multiSocket.getOutputStream(), true);
+            InputStreamReader serverStreamReader = new InputStreamReader(multiSocket.getInputStream());
+            BufferedReader serverReader = new BufferedReader(serverStreamReader);
         ){
             String test = "test";
             pWriter.println(test);
