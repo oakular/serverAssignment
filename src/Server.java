@@ -47,8 +47,8 @@ class MultipleServer extends Thread {
             InputStreamReader serverStreamReader = new InputStreamReader(multiSocket.getInputStream());
             BufferedReader serverReader = new BufferedReader(serverStreamReader);
         ){
-            String test = "test";
-            pWriter.println(test);
+            String test = "Connected to Server";
+            serverWriter.println(test);
 
         } catch (IOException e){
             e.printStackTrace();

@@ -3,14 +3,25 @@ import java.io.*;
 import java.net.*;
 
 class ClientInstance extends Thread {
+
     // ----- FIELDS ----- //
+    /** PrintWriter to print output from the Server */
     PrintWriter clientWriter;
+    /** StreamReader to read input from user */
     InputStreamReader clientStreamReader;
+    /** BufferedReader to read input from user */
     BufferedReader clientReader;
+
+    /** Constructor to call in ClientMain class
+     * and allows for thread to be started upon object
+     * of this class. */
     public ClientInstance(){
 
     } // end of CONSTRUCTOR
 
+    /** Method override that connects to Server via a socket and sets up the
+     * I/O streams. Method then waits for commands to be passed to carry out
+     * other functions. */
     public void run(){
         try{
             Socket socketConnect = new Socket("localhost", 4444);
@@ -21,8 +32,11 @@ class ClientInstance extends Thread {
             clientStreamReader = new InputStreamReader(socketConnect.getInputStream());
             clientReader = new BufferedReader(clientStreamReader);
 
-            while(true){
-                sendMessage();
+            String msg = "";
+
+            while((msg = clientReader.readLine()) != null){
+                //sendMessage(msg);
+                System.out.println(msg);
             } // end of while loop
 
         } catch (UnknownHostException e){
@@ -33,16 +47,9 @@ class ClientInstance extends Thread {
         } // end of IOException catch
     } // end of run() method
 
-    private boolean sendMessage(){
-        try{
-            String msg = clientReader.readLine();
-
-            if(msg != null)
-                System.out.print(msg);
-        } catch (IOException e){
-            e.printStackTrace();
-        } // end of IOException catch
-
+    private boolean sendMessage(String msg){
+        clientWriter.println(msg);
+        System.out.println(msg);
         return true;
     } // end of sendMessage() method
 } // end of ClientInstance Class
