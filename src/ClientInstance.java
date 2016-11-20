@@ -9,8 +9,6 @@ class ClientInstance implements Runnable {
     private PrintWriter clientWriter;
     /** StreamReader to read input from user */
     private InputStreamReader clientStreamReader;
-    /** BufferedReader to read input from Server */
-    private BufferedReader clientReader;
     /** BufferedReader to read input from standard input */
     private BufferedReader clientInputReader;
 
@@ -69,6 +67,9 @@ class ClientInstance implements Runnable {
 
     class ServerListener extends Thread {
 
+        /** BufferedReader to read input from Server */
+        private BufferedReader clientReader;
+
         public ServerListener(){
 
         } // end of CONSTRUCTOR
@@ -77,8 +78,10 @@ class ClientInstance implements Runnable {
             String serverMsg = "";
 
             try{
+                clientReader = new BufferedReader(clientStreamReader);
                 while(true){
                     serverMsg = clientReader.readLine();
+                    System.out.println("Line read from Server");
 
                     if(serverMsg != null){
                         System.out.println(serverMsg);
