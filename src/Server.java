@@ -7,11 +7,13 @@ import java.io.*;
 
 public class Server {
     private static HashSet<String> usrNameSet = new HashSet<String>();
+    final private long SERVER_START_TIME;
 
     /** Empty Constructor to create Server object.
      * Only used to allow instantiation of
      * Multiple Server inner class. */
     public Server(){
+        SERVER_START_TIME = System.currentTimeMillis();
 
     } // end of CONSTRUCTOR
 
@@ -32,7 +34,7 @@ public class Server {
             while(true){
                 Socket clientSocket = serverSocket.accept();
                 Server server = new Server(); // needed to create instance of inner class MultipleServer
-                Server.MultipleServer multiServer = server.new MultipleServer(clientSocket);
+                Server.MultipleServer multiServer = server.new MultipleServer(clientSocket, server);
                 clientList.add(multiServer);
                 clientList.get(clientList.size() - 1).start();
             } // end of while loop
@@ -44,12 +46,14 @@ public class Server {
 
     private class MultipleServer extends Thread {
         private Socket multiSocket;
+        private Server server;
         private PrintWriter serverWriter;
         private BufferedReader serverReader;
         //private HashSet<String> usrNameSet = new HashSet<String>();
 
-        public MultipleServer(Socket multiSocket){
+        public MultipleServer(Socket multiSocket, Server outerServer){
             this.multiSocket = multiSocket;
+            this.server = outerServer;
         } // end of CONSTRUCTOR
 
         public void run(){
@@ -90,13 +94,38 @@ public class Server {
             }while(Server.usrNameSet.add(clientUsrName) == false && clientUsrName != null);
         } // end of createUsername() method
 
+        /** Method to get the number of users online.
+         * Method returns the size of the HashSet holding each username.
+         * @return Size of HashSet storing each username. */
         private int getUsrNum(){
             return usrNameSet.size();
         } // end of getUsrNum() method
 
-        private int getServerUptime(){
-
+        /** Method to return the uptime of the server.
+         * Method get the current system time and minuses the time set
+         * when the Server constructor was called on server
+         * startup to calculate running time.
+         * @return The server uptime in milliseconds. */
+        private long getServerUptime(){
+            return System.currentTimeMillis() - SERVER_START_TIME;
         } // end of getServerUptime() method
+
+        /** Method to return server IP address.
+         * Method creates {@link InetAddress InetAddress} object and
+         * then uses {@link InetAddress#getHostAddress() getHostAddress}
+         * from the {@link InetAddress InetAddress} class to get the
+         * server's IP address.
+         * @return The IP address of the server. */
+        private String getServerIP(){
+            InetAddress ip = null;
+            try{
+                ip = InetAddress.getLocalHost();
+            } catch (UnknownHostException e){
+                System.err.println("Unknown Host Error: No Server IP");
+            } // end of UnknownHostException catch
+
+            return ip.getHostAddress();
+        } // end of getServerIP() method
 
         private void readFromClient(){
             boolean finished = false;
@@ -113,22 +142,31 @@ public class Server {
                     e.printStackTrace();
                 } // end of IOException catch
 
-                switch(clientMsg){
-                    case ";un": // user requested number of online users
-                    case ";usr_num":
-                        serverWriter.println("Users online: " + getUsrNum());
-                        break;
-                    case ";e": // user requested exit
-                    case ";exit":
-                        serverWriter.println("Logging out...");
-                        break;
-                    case ";ut": // user requested uptime status
-                    case ";uptime":
-                        break;
-                    default: // text message sent; broadcast
-                        System.out.println("Echoing back to client...");
-                        serverWriter.println("Echo: " + clientMsg);
-                } // end of switch statement
+                // check to see if user input is a specific request
+                // i.e starts with ;
+                if(clientMsg.charAt(0) == ';'){
+                    switch(clientMsg){
+                        case ";e": // user requested exit
+                        case ";exit":
+                            serverWriter.println("Logging out...");
+                            break;
+                        case ";ip":
+                        case ";ip_addr":
+                            serverWriter.println("Server IP Address: " + getServerIP());
+                        case ";ut": // user requested uptime status
+                        case ";uptime":
+                            serverWriter.println("Server Uptime: " + getServerUptime() + " milliseconds");
+                            break;
+                        case ";un": // user requested number of online users
+                        case ";usr_num":
+                            serverWriter.println("Users online: " + getUsrNum());
+                            break;
+                    } // end of switch statement
+                }else{
+                    System.out.println("Echoing back to client...");
+                    serverWriter.println("Echo: " + clientMsg);
+                }// end of if statement
+                serverWriter.flush();
             } // end of while loop
         } // end of readFromClient() method
     } // end of MultipleServer Class
