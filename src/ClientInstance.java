@@ -12,6 +12,8 @@ class ClientInstance extends Thread {
     /** BufferedReader to read input from user */
     BufferedReader clientReader;
 
+    BufferedReader clientInputReader;
+
     /** Constructor to call in ClientMain class
      * and allows for thread to be started upon object
      * of this class. */
@@ -31,13 +33,9 @@ class ClientInstance extends Thread {
             clientWriter = new PrintWriter(socketConnect.getOutputStream(), true);
             clientStreamReader = new InputStreamReader(socketConnect.getInputStream());
             clientReader = new BufferedReader(clientStreamReader);
+            clientInputReader = new BufferedReader(new InputStreamReader(System.in));
 
-            String msg = "";
-
-            while((msg = clientReader.readLine()) != null){
-                //sendMessage(msg);
-                System.out.println(msg);
-            } // end of while loop
+            sendMessage();
 
         } catch (UnknownHostException e){
             System.err.println("Unknown Host: 4444");
@@ -47,9 +45,23 @@ class ClientInstance extends Thread {
         } // end of IOException catch
     } // end of run() method
 
-    private boolean sendMessage(String msg){
-        clientWriter.println(msg);
-        System.out.println(msg);
-        return true;
+    /** Method to send message to the server.
+     * Method reads from Standard Input and writes to the socket
+     * where client is connected to server. Flushes buffers to ensure
+     * message is written to output stream. */
+    private void sendMessage(){
+        String msg;
+
+        try{
+            // --- while loop to ask for user input and send message to server
+            while((msg = clientInputReader.readLine()) != null){
+                clientWriter.println(msg);
+                clientWriter.flush();
+                System.out.println(msg);
+            }
+        } catch (IOException e){
+            System.err.println("I/O Error!");
+            e.printStackTrace();
+        } // end of IOException catch
     } // end of sendMessage() method
 } // end of ClientInstance Class
