@@ -28,7 +28,7 @@ class ClientInstance implements Runnable {
 
             // add I/O streams
             clientWriter = new PrintWriter(socketConnect.getOutputStream(), true);
-            clientStreamReader = new InputStreamReader(socketConnect.getInputStream());
+            clientStreamReader = new InputStreamReader(socketConnect.getInputStream()); // used in ServerListener Class
             clientInputReader = new BufferedReader(new InputStreamReader(System.in));
 
             // start the ServerListener to listen for messages
@@ -54,10 +54,13 @@ class ClientInstance implements Runnable {
         String msg;
 
         try{
+            System.out.print(">");
+
             // --- while loop to ask for user input and send message to server
             while((msg = clientInputReader.readLine()) != null){
                 clientWriter.println(msg);
                 clientWriter.flush();
+                System.out.print(">");
             }
         } catch (IOException e){
             System.err.println("I/O Error!");
@@ -74,11 +77,16 @@ class ClientInstance implements Runnable {
 
         } // end of CONSTRUCTOR
 
+        /** Method override that continually listens for output from
+         * the server and displays it on standard output. */
         public void run(){
-            String serverMsg = "";
+            String serverMsg;
 
             try{
                 clientReader = new BufferedReader(clientStreamReader);
+
+                // --- while loop to read output from the server
+                // and display on standard output
                 while(true){
                     serverMsg = clientReader.readLine();
                     System.out.println("Line read from Server");
