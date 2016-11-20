@@ -2,7 +2,7 @@
 import java.io.*;
 import java.net.*;
 
-class ClientInstance extends Thread {
+class ClientInstance implements Runnable {
 
     // ----- FIELDS ----- //
     /** PrintWriter to print output from the Server */
@@ -27,13 +27,16 @@ class ClientInstance extends Thread {
     public void run(){
         try{
             Socket socketConnect = new Socket("localhost", 4444);
-            System.out.println("Connected to Server");
 
             // add I/O streams
             clientWriter = new PrintWriter(socketConnect.getOutputStream(), true);
             clientStreamReader = new InputStreamReader(socketConnect.getInputStream());
-            clientReader = new BufferedReader(clientStreamReader);
             clientInputReader = new BufferedReader(new InputStreamReader(System.in));
+
+            // start the ServerListener to listen for messages
+            // from the Server
+            ServerListener sListener = new ServerListener();
+            sListener.start();
 
             sendMessage();
 
@@ -63,4 +66,28 @@ class ClientInstance extends Thread {
             e.printStackTrace();
         } // end of IOException catch
     } // end of sendMessage() method
+
+    class ServerListener extends Thread {
+
+        public ServerListener(){
+
+        } // end of CONSTRUCTOR
+
+        public void run(){
+            String serverMsg = "";
+
+            try{
+                while(true){
+                    serverMsg = clientReader.readLine();
+
+                    if(serverMsg != null){
+                        System.out.println(serverMsg);
+                    } // end of if statement
+                } // end of while loop
+            } catch (IOException e){
+                e.printStackTrace();
+                System.err.println("Error when listening to server");
+            } // end of IOException catch
+        } // end of run() method
+    } // end of ServerListener Class
 } // end of ClientInstance Class
