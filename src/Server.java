@@ -35,23 +35,53 @@ public class Server {
 
 class MultipleServer extends Thread {
     private Socket multiSocket;
+    private PrintWriter serverWriter;
+    private BufferedReader serverReader;
 
     public MultipleServer(Socket multiSocket){
         this.multiSocket = multiSocket;
     } // end of CONSTRUCTOR
 
     public void run(){
-        try(
+        try{
             // setup I/O streams to be able to send/receive data from client
-            PrintWriter serverWriter = new PrintWriter(multiSocket.getOutputStream(), true);
+            serverWriter = new PrintWriter(multiSocket.getOutputStream(), true);
             InputStreamReader serverStreamReader = new InputStreamReader(multiSocket.getInputStream());
-            BufferedReader serverReader = new BufferedReader(serverStreamReader);
-        ){
+            serverReader = new BufferedReader(serverStreamReader);
+
             String test = "Connected to Server";
-            serverWriter.println(test);
+
+            readFromClient();
 
         } catch (IOException e){
             e.printStackTrace();
         } // end of IOException catch
     } // end of run() method
+
+    private void readFromClient(){
+        boolean finished = false;
+        String clientMsg = "";
+
+        // --- while loop to read input from client
+        // continually
+        while(!finished){
+            try{
+                clientMsg = serverReader.readLine();
+                System.out.println("Reading from client...");
+            } catch (IOException e){
+                System.err.println("I/O Error on Server!");
+                e.printStackTrace();
+            } // end of IOException catch
+
+            // -- if statement to detect if client is
+            // submitting message or wanting to quit
+            if(clientMsg != null){
+                System.out.println("Echoing back to client...");
+                serverWriter.println("Echo: " + clientMsg);
+            }else{
+                finished = true;
+
+            } // end of if-else statement
+        } // end of while loop
+    } // end of readFromClient() method
 } // end of MultipleServer Class

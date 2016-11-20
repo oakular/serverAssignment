@@ -6,13 +6,13 @@ class ClientInstance extends Thread {
 
     // ----- FIELDS ----- //
     /** PrintWriter to print output from the Server */
-    PrintWriter clientWriter;
+    private PrintWriter clientWriter;
     /** StreamReader to read input from user */
-    InputStreamReader clientStreamReader;
-    /** BufferedReader to read input from user */
-    BufferedReader clientReader;
-
-    BufferedReader clientInputReader;
+    private InputStreamReader clientStreamReader;
+    /** BufferedReader to read input from Server */
+    private BufferedReader clientReader;
+    /** BufferedReader to read input from standard input */
+    private BufferedReader clientInputReader;
 
     /** Constructor to call in ClientMain class
      * and allows for thread to be started upon object
@@ -57,7 +57,6 @@ class ClientInstance extends Thread {
             while((msg = clientInputReader.readLine()) != null){
                 clientWriter.println(msg);
                 clientWriter.flush();
-                System.out.println(msg);
             }
         } catch (IOException e){
             System.err.println("I/O Error!");
