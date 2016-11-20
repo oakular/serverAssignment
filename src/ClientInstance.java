@@ -63,7 +63,7 @@ class ClientInstance implements Runnable {
                 System.out.print(">");
             }
         } catch (IOException e){
-            System.err.println("I/O Error!");
+            System.err.println("I/O Error whilst sending message");
             e.printStackTrace();
         } // end of IOException catch
     } // end of sendMessage() method
@@ -91,7 +91,6 @@ class ClientInstance implements Runnable {
                 // and display on standard output
                 while(true){
                     serverMsg = clientReader.readLine();
-                    System.out.println("Line read from Server");
 
                     if(serverMsg != null){
                         System.out.println(serverMsg);
