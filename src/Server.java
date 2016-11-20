@@ -8,6 +8,13 @@ import java.io.*;
 public class Server {
     private static HashSet<String> usrNameSet = new HashSet<String>();
 
+    /** Empty Constructor to create Server object.
+     * Only used to allow instantiation of
+     * Multiple Server inner class. */
+    public Server(){
+
+    } // end of CONSTRUCTOR
+
     public static void main(String[] args) throws IOException {
         ArrayList<MultipleServer> clientList = new ArrayList<MultipleServer>();
 
@@ -24,7 +31,8 @@ public class Server {
             // start them as new threads
             while(true){
                 Socket clientSocket = serverSocket.accept();
-                MultipleServer multiServer = new MultipleServer(clientSocket);
+                Server server = new Server(); // needed to create instance of inner class MultipleServer
+                Server.MultipleServer multiServer = server.new MultipleServer(clientSocket);
                 clientList.add(multiServer);
                 clientList.get(clientList.size() - 1).start();
             } // end of while loop
@@ -34,7 +42,7 @@ public class Server {
         } // end of IOException catch
     } // end of main() method
 
-    static class MultipleServer extends Thread {
+    private class MultipleServer extends Thread {
         private Socket multiSocket;
         private PrintWriter serverWriter;
         private BufferedReader serverReader;
@@ -67,6 +75,8 @@ public class Server {
         private void createUsername(){
             String clientUsrName = null;
 
+            // --- do-while loop to ask for username and check that
+            // it is unique against other entries in the HashSet
             do{
                 serverWriter.println("Please Enter a Username:- ");
                 serverWriter.flush();
@@ -79,6 +89,14 @@ public class Server {
                 }
             }while(Server.usrNameSet.add(clientUsrName) == false && clientUsrName != null);
         } // end of createUsername() method
+
+        private int getUsrNum(){
+            return usrNameSet.size();
+        } // end of getUsrNum() method
+
+        private int getServerUptime(){
+
+        } // end of getServerUptime() method
 
         private void readFromClient(){
             boolean finished = false;
@@ -95,15 +113,22 @@ public class Server {
                     e.printStackTrace();
                 } // end of IOException catch
 
-                // -- if statement to detect if client is
-                // submitting message or wanting to quit
-                if(clientMsg != null){
-                    System.out.println("Echoing back to client...");
-                    serverWriter.println("Echo: " + clientMsg);
-                }else{
-                    finished = true;
-
-                } // end of if-else statement
+                switch(clientMsg){
+                    case ";un": // user requested number of online users
+                    case ";usr_num":
+                        serverWriter.println("Users online: " + getUsrNum());
+                        break;
+                    case ";e": // user requested exit
+                    case ";exit":
+                        serverWriter.println("Logging out...");
+                        break;
+                    case ";ut": // user requested uptime status
+                    case ";uptime":
+                        break;
+                    default: // text message sent; broadcast
+                        System.out.println("Echoing back to client...");
+                        serverWriter.println("Echo: " + clientMsg);
+                } // end of switch statement
             } // end of while loop
         } // end of readFromClient() method
     } // end of MultipleServer Class
