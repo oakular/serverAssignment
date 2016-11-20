@@ -70,9 +70,11 @@ class ClientInstance implements Runnable {
 
     class ServerListener extends Thread {
 
+        // ----- FIELDS ----- //
         /** BufferedReader to read input from Server */
         private BufferedReader clientReader;
 
+        /** Empty Constructor to create ServerListener object */
         public ServerListener(){
 
         } // end of CONSTRUCTOR
