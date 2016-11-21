@@ -54,13 +54,10 @@ class ClientInstance implements Runnable {
         String msg;
 
         try{
-            System.out.print(">");
-
             // --- while loop to ask for user input and send message to server
             while((msg = clientInputReader.readLine()) != null){
                 clientWriter.println(msg);
                 clientWriter.flush();
-                System.out.print(">");
             }
         } catch (IOException e){
             System.err.println("I/O Error whilst sending message");

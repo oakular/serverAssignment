@@ -14,16 +14,15 @@ public class Server {
      * Multiple Server inner class. */
     public Server(){
         SERVER_START_TIME = System.currentTimeMillis();
-
     } // end of CONSTRUCTOR
 
     public static void main(String[] args) throws IOException {
         ArrayList<MultipleServer> clientList = new ArrayList<MultipleServer>();
 
         // if statement to check that port number is valid
-        if (args.length != 1) {
-            System.err.println("Usage: java Server <port number>");
-            System.exit(1);
+        while(args.length != 1){
+            System.err.println("Incorrect Port Number");
+            System.out.println("enter a working port number"); // todo: needs Scanner setting up
         } // end of if statement
 
         final int PORT_NUM = Integer.parseInt(args[0]);
@@ -47,15 +46,13 @@ public class Server {
     private class MultipleServer extends Thread {
         private Socket multiSocket;
         private Server server;
-        final private long CLIENT_CHATROOM_TIME;
+        private long clientChatroomTime;
         private PrintWriter serverWriter;
         private BufferedReader serverReader;
-        //private HashSet<String> usrNameSet = new HashSet<String>();
 
         public MultipleServer(Socket multiSocket, Server outerServer){
             this.multiSocket = multiSocket;
             this.server = outerServer;
-            CLIENT_CHATROOM_TIME = System.currentTimeMillis();
         } // end of CONSTRUCTOR
 
         public void run(){
@@ -66,11 +63,11 @@ public class Server {
                 serverReader = new BufferedReader(serverStreamReader);
 
                 System.out.println("Client Connected");
-                serverWriter.println("--- Connected to Server ---\n");
-                serverWriter.println("type \';h\' for help");
+                serverWriter.println("--- Connected to Server ---");
+                serverWriter.println("type \';h\' for help\n\n");
                 serverWriter.flush();
 
-                createUsername();
+                setUsrName();
 
                 readFromClient();
 
@@ -95,6 +92,7 @@ public class Server {
                 } // end of IOException catch
 
                 parseClientMsg(clientMsg);
+                serverWriter.println();
             } // end of while loop
         } // end of readFromClient() method
 
@@ -104,8 +102,9 @@ public class Server {
             if(MSG.charAt(0) == ';'){
                 clientCommand(MSG);
             }else{
-                System.out.println("Echoing back to client...");
-                serverWriter.println("Echo: " + MSG);
+                serverWriter.print("\u2713");
+                // code to broadcast messages
+                serverWriter.print("\u2713");
             } // end of if statement
 
             serverWriter.flush();
@@ -114,7 +113,7 @@ public class Server {
         private void clientCommand(final String CMD){
             switch(CMD){
                 case ";cut":
-                case "client_ut":
+                case ";client_ut":
                     serverWriter.println("Time in chatroom: " + getClientChatroomTime() + " seconds");
                     break;
                 case ";e": // user requested exit
@@ -145,11 +144,11 @@ public class Server {
         // ---- GETTERS ----
 
         private double getClientChatroomTime(){
-            return (System.currentTimeMillis() - CLIENT_CHATROOM_TIME) / 1000;
+            return (System.currentTimeMillis() - clientChatroomTime) / 1000;
         } // end of getClientChatroomTime() method
 
         private void getHelpCommands(){
-            serverWriter.println(";cut \t;client_ut \t\t get uptime of the client");
+            serverWriter.println(";cut \t;client_ut \t get uptime of the client");
             serverWriter.println(";e \t;exit \t\t log out and exit from chatroom");
             serverWriter.println(";h \t;help \t\t print help commands to terminal");
             serverWriter.println(";ip \t;ip_addr \t get IP address of the server");
@@ -182,7 +181,7 @@ public class Server {
          * when the Server constructor was called on server
          * startup to calculate running time.
          * @return The server uptime in milliseconds. */
-        private long getServerUptime(){
+        private double getServerUptime(){
             return (System.currentTimeMillis() - SERVER_START_TIME) / 1000;
         } // end of getServerUptime() method
 
@@ -194,22 +193,32 @@ public class Server {
         } // end of getUsrNum() method
 
         // ---- SETTERS ----
-        private void createUsername(){
+
+        /** Method to set a unique username for the client
+         * attempting to joing the chatroom.
+         * Method takes user input and checks that username
+         * is unique against those already stored in the
+         * {@link HashSet HashSet}. */
+        private void setUsrName(){
             String clientUsrName = null;
 
             // --- do-while loop to ask for username and check that
             // it is unique against other entries in the HashSet
             do{
                 serverWriter.println("Please Enter a Username:- ");
-                serverWriter.flush();
                 System.out.println("Asking for username");
+                serverWriter.flush();
                 try{
-                clientUsrName = serverReader.readLine();
-                } catch(IOException e){
+                    clientUsrName = serverReader.readLine();
+                }catch(IOException e){
                     System.err.println("I/O Error at Username Creation");
                     e.printStackTrace();
-                }
+                } // end of IOException catch
             }while(Server.usrNameSet.add(clientUsrName) == false && clientUsrName != null);
-        } // end of createUsername() method
+
+            // adds system time for when client entered the chatroom
+            clientChatroomTime = System.currentTimeMillis();
+            serverWriter.println("--- Entered Chatroom ---\n");
+        } // end of setUsrName() method
     } // end of MultipleServer Class
 } // end of Server Class
