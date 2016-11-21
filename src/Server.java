@@ -47,6 +47,7 @@ public class Server {
     private class MultipleServer extends Thread {
         private Socket multiSocket;
         private Server server;
+        final private long CLIENT_CHATROOM_TIME;
         private PrintWriter serverWriter;
         private BufferedReader serverReader;
         //private HashSet<String> usrNameSet = new HashSet<String>();
@@ -54,6 +55,7 @@ public class Server {
         public MultipleServer(Socket multiSocket, Server outerServer){
             this.multiSocket = multiSocket;
             this.server = outerServer;
+            CLIENT_CHATROOM_TIME = System.currentTimeMillis();
         } // end of CONSTRUCTOR
 
         public void run(){
@@ -76,39 +78,85 @@ public class Server {
             } // end of IOException catch
         } // end of run() method
 
-        private void createUsername(){
-            String clientUsrName = null;
+        private void readFromClient(){
+            boolean finished = false;
+            String clientMsg = "";
 
-            // --- do-while loop to ask for username and check that
-            // it is unique against other entries in the HashSet
-            do{
-                serverWriter.println("Please Enter a Username:- ");
-                serverWriter.flush();
-                System.out.println("Asking for username");
+            // --- while loop to read input from client
+            // continually
+            while(!finished){
                 try{
-                clientUsrName = serverReader.readLine();
-                } catch(IOException e){
-                    System.err.println("I/O Error at Username Creation");
+                    clientMsg = serverReader.readLine();
+                    System.out.println("Reading from client...");
+                } catch (IOException e){
+                    System.err.println("I/O Error on Server!");
                     e.printStackTrace();
-                }
-            }while(Server.usrNameSet.add(clientUsrName) == false && clientUsrName != null);
-        } // end of createUsername() method
+                } // end of IOException catch
 
-        /** Method to get the number of users online.
-         * Method returns the size of the HashSet holding each username.
-         * @return Size of HashSet storing each username. */
-        private int getUsrNum(){
-            return usrNameSet.size();
-        } // end of getUsrNum() method
+                parseClientMsg(clientMsg);
+            } // end of while loop
+        } // end of readFromClient() method
 
-        /** Method to return the uptime of the server.
-         * Method get the current system time and minuses the time set
-         * when the Server constructor was called on server
-         * startup to calculate running time.
-         * @return The server uptime in milliseconds. */
-        private long getServerUptime(){
-            return System.currentTimeMillis() - SERVER_START_TIME;
-        } // end of getServerUptime() method
+        private void parseClientMsg(final String MSG){
+            // check to see if user input is a specific request
+            // i.e starts with ;
+            if(MSG.charAt(0) == ';'){
+                clientCommand(MSG);
+            }else{
+                System.out.println("Echoing back to client...");
+                serverWriter.println("Echo: " + MSG);
+            } // end of if statement
+
+            serverWriter.flush();
+        } // end of parseUsrMsg() method
+
+        private void clientCommand(final String CMD){
+            switch(CMD){
+                case ";cut":
+                case "client_ut":
+                    serverWriter.println("Time in chatroom: " + getClientChatroomTime() + " seconds");
+                    break;
+                case ";e": // user requested exit
+                case ";exit":
+                    serverWriter.println("Logging out...");
+                    break;
+                case ";h":
+                case ";help":
+                    getHelpCommands();
+                    break;
+                case ";ip":
+                case ";ip_addr":
+                    serverWriter.println("Server IP Address: " + getServerIP());
+                    break;
+                case ";ut": // user requested uptime status
+                case ";uptime":
+                    serverWriter.println("Server Uptime: " + getServerUptime() + " seconds");
+                    break;
+                case ";un": // user requested number of online users
+                case ";usr_num":
+                    serverWriter.println("Users online: " + getUsrNum());
+                    break;
+                default:
+                    serverWriter.println("unknown command: type \';h\' for help");
+            } // end of switch statement
+        } // end of clientCommand() method
+
+        // ---- GETTERS ----
+
+        private double getClientChatroomTime(){
+            return (System.currentTimeMillis() - CLIENT_CHATROOM_TIME) / 1000;
+        } // end of getClientChatroomTime() method
+
+        private void getHelpCommands(){
+            serverWriter.println(";cut \t;client_ut \t\t get uptime of the client");
+            serverWriter.println(";e \t;exit \t\t log out and exit from chatroom");
+            serverWriter.println(";h \t;help \t\t print help commands to terminal");
+            serverWriter.println(";ip \t;ip_addr \t get IP address of the server");
+            serverWriter.println(";un \t;usr_num \t get number of online users");
+            serverWriter.println(";ut \t;uptime \t get uptime of the server");
+
+            serverWriter.flush();
+        } // end of getHelpCommands() method
 
         /** Method to return server IP address.
          * Method creates {@link InetAddress InetAddress} object and
@@ -127,47 +175,39 @@ public class Server {
             return ip.getHostAddress();
         } // end of getServerIP() method
 
-        private void readFromClient(){
-            boolean finished = false;
-            String clientMsg = "";
+        /** Method to return the uptime of the server.
+         * Method get the current system time and minuses the time set
+         * when the Server constructor was called on server
+         * startup to calculate running time.
+         * @return The server uptime in milliseconds. */
+        private long getServerUptime(){
+            return (System.currentTimeMillis() - SERVER_START_TIME) / 1000;
+        } // end of getServerUptime() method
 
-            // --- while loop to read input from client
-            // continually
-            while(!finished){
-                try{
-                    clientMsg = serverReader.readLine();
-                    System.out.println("Reading from client...");
-                } catch (IOException e){
-                    System.err.println("I/O Error on Server!");
-                    e.printStackTrace();
-                } // end of IOException catch
+        /** Method to get the number of users online.
+         * Method returns the size of the HashSet holding each username.
+         * @return Size of HashSet storing each username. */
+        private int getUsrNum(){
+            return usrNameSet.size();
+        } // end of getUsrNum() method
 
-                // check to see if user input is a specific request
-                // i.e starts with ;
-                if(clientMsg.charAt(0) == ';'){
-                    switch(clientMsg){
-                        case ";e": // user requested exit
-                        case ";exit":
-                            serverWriter.println("Logging out...");
-                            break;
-                        case ";ip":
-                        case ";ip_addr":
-                            serverWriter.println("Server IP Address: " + getServerIP());
-                        case ";ut": // user requested uptime status
-                        case ";uptime":
-                            serverWriter.println("Server Uptime: " + getServerUptime() + " milliseconds");
-                            break;
-                        case ";un": // user requested number of online users
-                        case ";usr_num":
-                            serverWriter.println("Users online: " + getUsrNum());
-                            break;
-                    } // end of switch statement
-                }else{
-                    System.out.println("Echoing back to client...");
-                    serverWriter.println("Echo: " + clientMsg);
-                }// end of if statement
+        // ---- SETTERS ----
+        private void createUsername(){
+            String clientUsrName = null;
+
+            // --- do-while loop to ask for username and check that
+            // it is unique against other entries in the HashSet
+            do{
+                serverWriter.println("Please Enter a Username:- ");
                 serverWriter.flush();
-            } // end of while loop
-        } // end of readFromClient() method
+                System.out.println("Asking for username");
+                try{
+                clientUsrName = serverReader.readLine();
+                } catch(IOException e){
+                    System.err.println("I/O Error at Username Creation");
+                    e.printStackTrace();
+                }
+            }while(Server.usrNameSet.add(clientUsrName) == false && clientUsrName != null);
+        } // end of createUsername() method
     } // end of MultipleServer Class
 } // end of Server Class
