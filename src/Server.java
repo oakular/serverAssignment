@@ -26,9 +26,9 @@ public class Server {
             System.exit(1);
         } // end of if statement
 
-        int portNum = Integer.parseInt(args[0]);
+        final int PORT_NUM = Integer.parseInt(args[0]);
 
-        try(ServerSocket serverSocket = new ServerSocket(portNum)){
+        try(ServerSocket serverSocket = new ServerSocket(PORT_NUM)){
             // --- while loop to listen to connection requests and
             // start them as new threads
             while(true){
@@ -39,7 +39,7 @@ public class Server {
                 clientList.get(clientList.size() - 1).start();
             } // end of while loop
         } catch (IOException e) {
-            System.err.println("Unable to reach port " + portNum);
+            System.err.println("Unable to reach port " + PORT_NUM);
             System.exit(1);
         } // end of IOException catch
     } // end of main() method
@@ -67,6 +67,7 @@ public class Server {
 
                 System.out.println("Client Connected");
                 serverWriter.println("--- Connected to Server ---\n");
+                serverWriter.println("type \';h\' for help");
                 serverWriter.flush();
 
                 createUsername();
@@ -165,14 +166,15 @@ public class Server {
          * server's IP address.
          * @return The IP address of the server. */
         private String getServerIP(){
-            InetAddress ip = null;
+            final InetAddress IP;
             try{
-                ip = InetAddress.getLocalHost();
+                IP = InetAddress.getLocalHost();
+                return IP.getHostAddress();
             } catch (UnknownHostException e){
                 System.err.println("Unknown Host Error: No Server IP");
             } // end of UnknownHostException catch
 
-            return ip.getHostAddress();
+            return "IP Address Unavailable";
         } // end of getServerIP() method
 
         /** Method to return the uptime of the server.
