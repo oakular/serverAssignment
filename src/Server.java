@@ -7,6 +7,7 @@ import java.io.*;
 
 public class Server {
     private static HashSet<String> usrNameSet = new HashSet<String>();
+    private static ArrayList<MultipleServer> clientList = new ArrayList<MultipleServer>();
     final private long SERVER_START_TIME;
 
     /** Empty Constructor to create Server object.
@@ -17,7 +18,6 @@ public class Server {
     } // end of CONSTRUCTOR
 
     public static void main(String[] args) throws IOException {
-        ArrayList<MultipleServer> clientList = new ArrayList<MultipleServer>();
 
         // if statement to check that port number is valid
         while(args.length != 1){
@@ -41,7 +41,16 @@ public class Server {
             System.err.println("Unable to reach port " + PORT_NUM);
             System.exit(1);
         } // end of IOException catch
+
     } // end of main() method
+
+    private static void broadcastMessage(String MSG, MultipleServer sendingServer){
+        for(int i=0; i < clientList.size(); i++){
+            if(clientList.get(i) != sendingServer){
+                clientList.get(i).printMessage(MSG);
+            } // end of if statement
+        } // end of for loop
+    } // end of broadcastMessage() method
 
     private class MultipleServer extends Thread {
         private Socket multiSocket;
@@ -103,12 +112,17 @@ public class Server {
                 clientCommand(MSG);
             }else{
                 serverWriter.print("\u2713");
-                // code to broadcast messages
+                server.broadcastMessage(MSG, this);;
                 serverWriter.print("\u2713");
             } // end of if statement
 
             serverWriter.flush();
         } // end of parseUsrMsg() method
+
+        private void printMessage(final String MSG){
+            serverWriter.println(MSG);
+            serverWriter.flush();
+        } // end of printMessage() method
 
         private void clientCommand(final String CMD){
             switch(CMD){
