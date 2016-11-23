@@ -92,6 +92,7 @@ class ClientInstance implements Runnable {
                     if(serverMsg != null){
                         System.out.println(serverMsg);
                     } // end of if statement
+
                 } // end of while loop
             } catch (IOException e){
                 e.printStackTrace();

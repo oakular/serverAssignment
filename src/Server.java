@@ -44,10 +44,12 @@ public class Server {
 
     } // end of main() method
 
-    private static void broadcastMessage(String MSG, MultipleServer sendingServer){
+    private static void broadcastMessage(
+                String MSG, final MultipleServer BCASTER){
+
         for(int i=0; i < clientList.size(); i++){
-            if(clientList.get(i) != sendingServer){
-                clientList.get(i).printMessage(MSG);
+            if(clientList.get(i) != BCASTER){
+                clientList.get(i).printMessage(MSG, BCASTER);
             } // end of if statement
         } // end of for loop
     } // end of broadcastMessage() method
@@ -58,6 +60,8 @@ public class Server {
         private long clientChatroomTime;
         private PrintWriter serverWriter;
         private BufferedReader serverReader;
+        private String usrName;
+        private boolean finished = false;
 
         public MultipleServer(Socket multiSocket, Server outerServer){
             this.multiSocket = multiSocket;
@@ -85,8 +89,11 @@ public class Server {
             } // end of IOException catch
         } // end of run() method
 
+        // ----------------
+        // MESSAGE HANDLING
+        // ----------------
+
         private void readFromClient(){
-            boolean finished = false;
             String clientMsg = "";
 
             // --- while loop to read input from client
@@ -112,15 +119,16 @@ public class Server {
                 clientCommand(MSG);
             }else{
                 serverWriter.print("\u2713");
-                server.broadcastMessage(MSG, this);;
+                broadcastMessage(MSG, this);
                 serverWriter.print("\u2713");
             } // end of if statement
 
             serverWriter.flush();
         } // end of parseUsrMsg() method
 
-        private void printMessage(final String MSG){
-            serverWriter.println(MSG);
+        private synchronized void printMessage(
+                final String MSG, final MultipleServer BCASTER){
+            serverWriter.println("\n" + BCASTER.getUsrName() + ": " + MSG + "\n");
             serverWriter.flush();
         } // end of printMessage() method
 
@@ -133,6 +141,8 @@ public class Server {
                 case ";e": // user requested exit
                 case ";exit":
                     serverWriter.println("Logging out...");
+                    this.logOut();
+                    System.out.println(this.usrName + " is logging out");
                     break;
                 case ";h":
                 case ";help":
@@ -155,7 +165,35 @@ public class Server {
             } // end of switch statement
         } // end of clientCommand() method
 
-        // ---- GETTERS ----
+        // ----------------
+        //  LOGGING OUT
+        // ----------------
+
+        private void logOut(){
+            try{
+                serverReader.close();
+                finished = true;
+            } catch (IOException e){
+                e.printStackTrace();
+                System.err.println("I/O error on logout");
+            }
+
+            if(serverReader != null){
+                serverWriter.close();
+            }
+
+            try{
+                multiSocket.close();
+            } catch (IOException e){
+                e.printStackTrace();
+            }
+
+            System.out.println("user logged out");
+        } // end of logOut() method
+
+        // ----------------
+        //     GETTERS
+        // ----------------
 
         private double getClientChatroomTime(){
             return (System.currentTimeMillis() - clientChatroomTime) / 1000;
@@ -199,6 +237,10 @@ public class Server {
             return (System.currentTimeMillis() - SERVER_START_TIME) / 1000;
         } // end of getServerUptime() method
 
+        private String getUsrName(){
+            return usrName;
+        } // end of getUsrName() method
+
         /** Method to get the number of users online.
          * Method returns the size of the HashSet holding each username.
          * @return Size of HashSet storing each username. */
@@ -206,7 +248,9 @@ public class Server {
             return usrNameSet.size();
         } // end of getUsrNum() method
 
-        // ---- SETTERS ----
+        // ----------------
+        //     SETTERS
+        // ----------------
 
         /** Method to set a unique username for the client
          * attempting to joing the chatroom.
@@ -229,6 +273,8 @@ public class Server {
                     e.printStackTrace();
                 } // end of IOException catch
             }while(Server.usrNameSet.add(clientUsrName) == false && clientUsrName != null);
+
+            usrName = clientUsrName;
 
             // adds system time for when client entered the chatroom
             clientChatroomTime = System.currentTimeMillis();
