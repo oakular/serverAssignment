@@ -19,9 +19,14 @@ class ClientInstance implements Runnable {
     /** Constructor to call in ClientMain class
      * and allows for thread to be started upon object
      * of this class. */
-    public ClientInstance(int portNum, InetAddress ipAddr){
-        this.portNum = portNum;
-        this.ipAddr = ipAddr;
+    public ClientInstance(String ipAddr, String portNum){
+        this.portNum = Integer.parseInt(portNum);
+        try{
+            this.ipAddr = InetAddress.getByName(ipAddr);
+        } catch (UnknownHostException e){
+            System.err.println("Unknown Host");
+            System.exit(-1);
+        } // end of UnknownHostException catch
     } // end of CONSTRUCTOR
 
     /** Method override that connects to Server via a socket and sets up the
