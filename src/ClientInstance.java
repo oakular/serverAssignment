@@ -12,6 +12,8 @@ class ClientInstance implements Runnable {
     /** BufferedReader to read input from standard input */
     private BufferedReader clientInputReader;
 
+    private boolean stop = false;
+
     /** Constructor to call in ClientMain class
      * and allows for thread to be started upon object
      * of this class. */
@@ -55,7 +57,7 @@ class ClientInstance implements Runnable {
 
         try{
             // --- while loop to ask for user input and send message to server
-            while((msg = clientInputReader.readLine()) != null){
+            while((msg = clientInputReader.readLine()) != null && stop == false){
                 clientWriter.println(msg);
                 clientWriter.flush();
             }
@@ -63,6 +65,8 @@ class ClientInstance implements Runnable {
             System.err.println("I/O Error whilst sending message");
             e.printStackTrace();
         } // end of IOException catch
+
+        System.exit(0);
     } // end of sendMessage() method
 
     class ServerListener extends Thread {
@@ -91,13 +95,16 @@ class ClientInstance implements Runnable {
 
                     if(serverMsg != null){
                         System.out.println(serverMsg);
+                    } else if(serverMsg == "Logging out..."){
+                        System.out.println("Logout Successful");
+                        stop = true;
                     } // end of if statement
 
                 } // end of while loop
             } catch (IOException e){
                 e.printStackTrace();
                 System.err.println("Error when listening to server");
-            } // end of IOException catch
+            } // end of IOException lncatch
         } // end of run() method
     } // end of ServerListener Class
 } // end of ClientInstance Class

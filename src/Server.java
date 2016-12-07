@@ -8,13 +8,13 @@ import java.io.*;
 public class Server {
     private static HashSet<String> usrNameSet = new HashSet<String>();
     private static ArrayList<MultipleServer> clientList = new ArrayList<MultipleServer>();
-    final private long SERVER_START_TIME;
+    final static private long SERVER_START_TIME = System.currentTimeMillis();
 
     /** Empty Constructor to create Server object.
      * Only used to allow instantiation of
      * Multiple Server inner class. */
     public Server(){
-        SERVER_START_TIME = System.currentTimeMillis();
+
     } // end of CONSTRUCTOR
 
     public static void main(String[] args) throws IOException {
@@ -55,8 +55,7 @@ public class Server {
     } // end of broadcastMessage() method
 
     private class MultipleServer extends Thread {
-        private Socket multiSocket;
-        private Server server;
+        private final Socket MULTISOCKET;
         private long clientChatroomTime;
         private PrintWriter serverWriter;
         private BufferedReader serverReader;
@@ -64,20 +63,18 @@ public class Server {
         private boolean finished = false;
 
         public MultipleServer(Socket multiSocket, Server outerServer){
-            this.multiSocket = multiSocket;
-            this.server = outerServer;
+            this.MULTISOCKET = multiSocket;
         } // end of CONSTRUCTOR
 
         public void run(){
             try{
                 // setup I/O streams to be able to send/receive data from client
-                serverWriter = new PrintWriter(multiSocket.getOutputStream(), true);
-                InputStreamReader serverStreamReader = new InputStreamReader(multiSocket.getInputStream());
+                serverWriter = new PrintWriter(MULTISOCKET.getOutputStream(), true);
+                InputStreamReader serverStreamReader = new InputStreamReader(MULTISOCKET.getInputStream());
                 serverReader = new BufferedReader(serverStreamReader);
 
-                System.out.println("Client Connected");
-                serverWriter.println("--- Connected to Server ---");
-                serverWriter.println("type \';h\' for help\n\n");
+                System.out.println("New client connected");
+                serverWriter.println("----- Connected to Server ---");
                 serverWriter.flush();
 
                 setUsrName();
@@ -101,13 +98,21 @@ public class Server {
             while(!finished){
                 try{
                     clientMsg = serverReader.readLine();
-                    System.out.println("Reading from client...");
+                    System.out.println("Reading from " + this.usrName + "...");
                 } catch (IOException e){
                     System.err.println("I/O Error on Server!");
                     e.printStackTrace();
                 } // end of IOException catch
 
-                parseClientMsg(clientMsg);
+                // handle abrupt disconnect by client
+                if(clientMsg != null){
+                    parseClientMsg(clientMsg);
+                }else{
+                    System.out.println("Abrupt disconnect by " + this.usrName);
+                    this.logOut();
+                    broadcastMessage("has logged off", this);
+                } // end of if statement
+
                 serverWriter.println();
             } // end of while loop
         } // end of readFromClient() method
@@ -128,7 +133,7 @@ public class Server {
 
         private synchronized void printMessage(
                 final String MSG, final MultipleServer BCASTER){
-            serverWriter.println("\n" + BCASTER.getUsrName() + ": " + MSG + "\n");
+            serverWriter.println(BCASTER.getUsrName() + ": " + MSG);
             serverWriter.flush();
         } // end of printMessage() method
 
@@ -140,9 +145,10 @@ public class Server {
                     break;
                 case ";e": // user requested exit
                 case ";exit":
-                    serverWriter.println("Logging out...");
-                    this.logOut();
                     System.out.println(this.usrName + " is logging out");
+                    // send message to alert other users
+                    broadcastMessage("has logged off", this);
+                    this.logOut();
                     break;
                 case ";h":
                 case ";help":
@@ -170,26 +176,28 @@ public class Server {
         // ----------------
 
         private void logOut(){
+            // close the I/0 streams
             try{
                 serverReader.close();
                 finished = true;
             } catch (IOException e){
                 e.printStackTrace();
                 System.err.println("I/O error on logout");
-            }
+            } // end of IOException catch
 
-            if(serverReader != null){
-                serverWriter.close();
-            }
+            serverWriter.println("Logging off...");
+            serverWriter.close();
 
             try{
-                multiSocket.close();
+                MULTISOCKET.close();
             } catch (IOException e){
                 e.printStackTrace();
             }
 
-            System.out.println("user logged out");
-        } // end of logOut() method
+            System.out.println(this.usrName +  " logged out");
+            // remove username from HashSet
+            usrNameSet.remove(this.getUsrName());
+        } // end of laogOut() method
 
         // ----------------
         //     GETTERS
@@ -263,8 +271,8 @@ public class Server {
             // --- do-while loop to ask for username and check that
             // it is unique against other entries in the HashSet
             do{
-                serverWriter.println("Please Enter a Username:- ");
-                System.out.println("Asking for username");
+                serverWriter.println("Please enter a username:- ");
+                System.out.println("Requesting username");
                 serverWriter.flush();
                 try{
                     clientUsrName = serverReader.readLine();
@@ -275,10 +283,12 @@ public class Server {
             }while(Server.usrNameSet.add(clientUsrName) == false && clientUsrName != null);
 
             usrName = clientUsrName;
+            System.out.println("User added: " + this.usrName);
 
             // adds system time for when client entered the chatroom
             clientChatroomTime = System.currentTimeMillis();
             serverWriter.println("--- Entered Chatroom ---\n");
+            serverWriter.println("type \';h\' for help\n\n");
         } // end of setUsrName() method
     } // end of MultipleServer Class
 } // end of Server Class
