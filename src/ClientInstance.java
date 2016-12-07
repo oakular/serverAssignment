@@ -11,14 +11,17 @@ class ClientInstance implements Runnable {
     private InputStreamReader clientStreamReader;
     /** BufferedReader to read input from standard input */
     private BufferedReader clientInputReader;
+    private int portNum;
+    private InetAddress ipAddr;
 
     private boolean stop = false;
 
     /** Constructor to call in ClientMain class
      * and allows for thread to be started upon object
      * of this class. */
-    public ClientInstance(){
-
+    public ClientInstance(int portNum, InetAddress ipAddr){
+        this.portNum = portNum;
+        this.ipAddr = ipAddr;
     } // end of CONSTRUCTOR
 
     /** Method override that connects to Server via a socket and sets up the
@@ -26,7 +29,7 @@ class ClientInstance implements Runnable {
      * other functions. */
     public void run(){
         try{
-            Socket socketConnect = new Socket("localhost", 4444);
+            Socket socketConnect = new Socket(ipAddr, portNum);
 
             // add I/O streams
             clientWriter = new PrintWriter(socketConnect.getOutputStream(), true);
@@ -90,17 +93,19 @@ class ClientInstance implements Runnable {
 
                 // --- while loop to read output from the server
                 // and display on standard output
-                while(true){
+                while(!stop){
                     serverMsg = clientReader.readLine();
 
                     if(serverMsg != null){
                         System.out.println(serverMsg);
-                    } else if(serverMsg == "Logging out..."){
-                        System.out.println("Logout Successful");
+                    }else if(serverMsg == null){
+                        System.err.println("System exiting...");
                         stop = true;
                     } // end of if statement
 
                 } // end of while loop
+
+                System.exit(0);
             } catch (IOException e){
                 e.printStackTrace();
                 System.err.println("Error when listening to server");

@@ -19,12 +19,6 @@ public class Server {
 
     public static void main(String[] args) throws IOException {
 
-        // if statement to check that port number is valid
-        while(args.length != 1){
-            System.err.println("Incorrect Port Number");
-            System.out.println("enter a working port number"); // todo: needs Scanner setting up
-        } // end of if statement
-
         final int PORT_NUM = Integer.parseInt(args[0]);
 
         try(ServerSocket serverSocket = new ServerSocket(PORT_NUM)){
