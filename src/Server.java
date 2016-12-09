@@ -9,7 +9,6 @@ public class Server {
     private static HashSet<String> usrNameSet = new HashSet<String>();
     private static ArrayList<MultipleServer> clientList = new ArrayList<MultipleServer>();
     final static private long SERVER_START_TIME = System.currentTimeMillis();
-    static int PORT_NUM;
 
     /** Empty Constructor to create Server object.
      * Only used to allow instantiation of
@@ -19,6 +18,7 @@ public class Server {
     } // end of CONSTRUCTOR
 
     public static void main(String[] args) throws IOException {
+        final int PORT_NUM;
 
         PORT_NUM = Integer.parseInt(args[0]);
 
@@ -34,7 +34,7 @@ public class Server {
             } // end of while loop
         } catch (IOException e) {
             System.err.println("Unable to reach port " + PORT_NUM);
-            System.exit(1);
+            System.exit(-1);
         } // end of IOException catch
 
     } // end of main() method
@@ -42,6 +42,8 @@ public class Server {
     private static void broadcastMessage(
                 String MSG, final MultipleServer BCASTER){
 
+        // --- for loop to iterate through all other users
+        // online
         for(int i=0; i < clientList.size(); i++){
             if(clientList.get(i) != BCASTER){
                 clientList.get(i).printMessage(MSG, BCASTER);
@@ -118,7 +120,7 @@ public class Server {
                 // check to see if user input is a specific request
                 // i.e starts with ;
                 if(MSG.charAt(0) == ';'){
-                    clientCommand(MSG);
+                    parseClientCommand(MSG);
                 }else{
                     serverWriter.print("\u2713");
                     broadcastMessage(MSG, this);
@@ -135,9 +137,9 @@ public class Server {
             serverWriter.flush();
         } // end of printMessage() method
 
-        private void clientCommand(final String CMD){
+        private void parseClientCommand(final String CMD){
             switch(CMD){
-                case ";cut":
+                case ";cut": // show client uptime
                 case ";client_ut":
                     serverWriter.println("Time in chatroom: " + getClientChatroomTime() + " seconds");
                     break;
@@ -148,11 +150,11 @@ public class Server {
                     broadcastMessage("has logged off", this);
                     this.logOut();
                     break;
-                case ";h":
+                case ";h": // list help commands
                 case ";help":
                     getHelpCommands();
                     break;
-                case ";ip":
+                case ";ip": // show ip address of server
                 case ";ip_addr":
                     serverWriter.println("Server IP Address: " + getServerIP());
                     break;
@@ -205,6 +207,11 @@ public class Server {
             return (System.currentTimeMillis() - clientChatroomTime) / 1000;
         } // end of getClientChatroomTime() method
 
+        /** Method to print out the available commands for the client whilst
+         * connected to the server.
+         * Method uses the {@link PrintWriter#println() println} method from the
+         * {@link PrintWriter PrintWriter} class to output the available commands
+         * to the client. */
         private void getHelpCommands(){
             serverWriter.println(";cut \t;client_ut \t get uptime of the client");
             serverWriter.println(";e \t;exit \t\t log out and exit from chatroom");
@@ -243,6 +250,9 @@ public class Server {
             return (System.currentTimeMillis() - SERVER_START_TIME) / 1000;
         } // end of getServerUptime() method
 
+        /** Method to get the user name of the client that calls the method.
+         * Method returns the instance of the username for that client.
+         * @return username of the client */
         private String getUsrName(){
             return usrName;
         } // end of getUsrName() method
@@ -281,6 +291,7 @@ public class Server {
             }while(Server.usrNameSet.add(clientUsrName) == false && clientUsrName != null);
 
             usrName = clientUsrName;
+            broadcastMessage("is online",this);
             System.out.println("User added: " + this.usrName);
 
             // adds system time for when client entered the chatroom

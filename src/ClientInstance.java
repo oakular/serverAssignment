@@ -16,7 +16,7 @@ class ClientInstance implements Runnable {
 
     private boolean stop = false;
 
-    /** Constructor to call in ClientMain class
+    /** Constructor to call within ClientMain class
      * and allows for thread to be started upon object
      * of this class. */
     public ClientInstance(String ipAddr, String portNum){
@@ -49,9 +49,10 @@ class ClientInstance implements Runnable {
             sendMessage();
 
         } catch (UnknownHostException e){
-            System.err.println("Unknown Host: 4444");
+            System.err.println("Unknown Host: " + portNum);
             System.exit(-1);
         } catch (IOException e){ // end of UnknownHostException catch
+            System.err.println("Connection refused");
             e.printStackTrace();
         } // end of IOException catch
     } // end of run() method
