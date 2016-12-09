@@ -9,6 +9,7 @@ public class Server {
     private static HashSet<String> usrNameSet = new HashSet<String>();
     private static ArrayList<MultipleServer> clientList = new ArrayList<MultipleServer>();
     final static private long SERVER_START_TIME = System.currentTimeMillis();
+    static int PORT_NUM;
 
     /** Empty Constructor to create Server object.
      * Only used to allow instantiation of
@@ -19,7 +20,7 @@ public class Server {
 
     public static void main(String[] args) throws IOException {
 
-        final int PORT_NUM = Integer.parseInt(args[0]);
+        PORT_NUM = Integer.parseInt(args[0]);
 
         try(ServerSocket serverSocket = new ServerSocket(PORT_NUM)){
             // --- while loop to listen to connection requests and
@@ -112,14 +113,17 @@ public class Server {
         } // end of readFromClient() method
 
         private void parseClientMsg(final String MSG){
-            // check to see if user input is a specific request
-            // i.e starts with ;
-            if(MSG.charAt(0) == ';'){
-                clientCommand(MSG);
-            }else{
-                serverWriter.print("\u2713");
-                broadcastMessage(MSG, this);
-                serverWriter.print("\u2713");
+            // ensures only parsing of non-empty strings
+            if(MSG.length() != 0){
+                // check to see if user input is a specific request
+                // i.e starts with ;
+                if(MSG.charAt(0) == ';'){
+                    clientCommand(MSG);
+                }else{
+                    serverWriter.print("\u2713");
+                    broadcastMessage(MSG, this);
+                    serverWriter.print("\u2713");
+                } // end of if statement
             } // end of if statement
 
             serverWriter.flush();
