@@ -2,8 +2,18 @@
 // ----- IMPORT STATEMENTS -----
 import java.util.Scanner;
 
+/** Class containing a main method to take user input
+ * for the IP address and port number of the {@link Server Server}
+ * and instantiate a new {@link ClientInstance Client} and then
+ * starting the thread. */
 public class ClientMain {
 
+    /** Main method that instantiates a {@link ClientInstance Client} and
+     * starts its thread. The method also uses the {@link Scanner Scanner}
+     * class to take user input for the IP address and port number of the
+     * {@link Server Server} and passes this to the
+     * {@link ClientInstance ClientInstance} constructor.
+     * @param args - command line aguments passed upon program start. */
     public static void main(String[] args){
         Scanner scan = new Scanner(System.in);
 
