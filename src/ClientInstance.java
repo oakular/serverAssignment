@@ -63,6 +63,7 @@ class ClientInstance implements Runnable {
 
             sendMessage();
 
+            socketConnect.close();
         } catch (UnknownHostException e){
             System.err.println("Unknown Host: " + portNum);
             System.exit(-1);
@@ -70,6 +71,7 @@ class ClientInstance implements Runnable {
             System.err.println("Connection refused");
             e.printStackTrace();
         } // end of IOException catch
+
     } // end of run() method
 
     /** Method to send message to the server.
