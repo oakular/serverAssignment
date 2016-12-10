@@ -74,6 +74,9 @@ public class Server {
         } // end of for loop
     } // end of broadcastMessage() method
 
+    /** Class that extends {@link Thread Thread} class and contains
+     * methods to read from ,{@link ClientInstance Clients} handle message
+     * parsing and set usernames for {@link ClientInstance Clients}. */
     private class MultipleServer extends Thread {
 
         /** {@link Socket Socket} constant that stores the socket value
@@ -195,6 +198,10 @@ public class Server {
             serverWriter.flush();
         } // end of parseUsrMsg() method
 
+        /** Method to print message to output stream of
+         * {@link ClientInstance Clients}.
+         * @param MSG - The message to be printed.
+         * @param BCASTER - The Client sending the message. */
         private synchronized void printMessage(
                 final String MSG, final MultipleServer BCASTER){
             serverWriter.println(BCASTER.getUsrName() + ": " + MSG);
@@ -358,9 +365,12 @@ public class Server {
 
         /** Method to set a unique username for the client
          * attempting to joing the chatroom.
-         * Method takes user input and checks that username
-         * is unique against those already stored in the
-         * {@link HashSet HashSet}. */
+         * Method takes input through the {@link #serverReader serverReader}
+         * and checks that username is unique against those already
+         * stored in the {@link Server#usrNameSet usrNameSet}. It then
+         * {@link #broadcastMessage broadcasts a message} to alert all users
+         * that a new user is online and stores the system time in
+         * {@link #clientChatroomTime clientChatroomTime} */
         private void setUsrName(){
 
             // --- do-while loop to ask for username and check that
