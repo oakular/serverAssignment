@@ -110,10 +110,11 @@ public class Server {
             this.MULTISOCKET = multiSocket;
         } // end of CONSTRUCTOR
 
-        /** Method override of the {@link Thread#run run} method in the
+        /** Method override of the {@link Thread#run() run} method in the
          * {@link Thread Thread} class. Method sets up the I/O streams via
-         * the {@link PrintWriter PrintWriter} and {@link BufferedReader BufferedReader}
-         * classes and then calls {@link #setUsrName() setUsrName} and
+         * the {@link PrintWriter PrintWriter} and
+         * {@link BufferedReader BufferedReader} classes and then calls
+         * the {@link #setUsrName() setUsrName} and
          * {@link #readFromClient() readFromClient} methods. */
          public void run(){
             try{
@@ -145,9 +146,9 @@ public class Server {
          * the received message onto the message parsing methods.
          * Method reads from {@link ClientInstance Client} via the
          * {@link #serverReader serverReader} and only passes not-null
-         * messages onto the {@link #parseClientMsg() parseClientMsg} method.
-         * If the message is null then the {@link #logOut() logOut} method
-         * is called */
+         * messages onto the {@link #parseClientMsg(String) parseClientMsg}
+         * method. If the message is null then the {@link #logOut() logOut}
+         * method is called */
         private void readFromClient(){
             String clientMsg = "";
 
@@ -178,8 +179,9 @@ public class Server {
         /** Method to take message as a parameter and detect if it is
          * a broadcast message or a server command. Method looks at the
          * first character of the message and if it is a command message calls
-         * the {@link #parseClientCommand parseClientCommand} method. Otherwise
-         * it calls the {@link #broadcastMessage() broadcastMessage} method.
+         * the {@link #parseClientCommand parseClientCommand} method.
+         * Otherwise it calls the {@link #broadcastMessage(String,
+         * MultipleServer) broadcastMessage} method.
          * @param MSG - The message to be parsed. */
         private void parseClientMsg(final String MSG){
             // ensures only parsing of non-empty strings
@@ -304,9 +306,9 @@ public class Server {
 
         /** Method to print out the available commands for the client whilst
          * connected to the server.
-         * Method uses the {@link PrintWriter#println() println} method from the
-         * {@link PrintWriter PrintWriter} class to output the available commands
-         * to the client. */
+         * Method uses the {@link PrintWriter#println(String) println} method
+         * from the {@link PrintWriter PrintWriter} class to output the
+         * available commands to the client. */
         private void getHelpCommands(){
             serverWriter.println(";cut \t;client_ut \t get uptime of the client");
             serverWriter.println(";e \t;exit \t\t log out and exit from chatroom");
@@ -345,15 +347,16 @@ public class Server {
             return (System.currentTimeMillis() - SERVER_START_TIME) / 1000;
         } // end of getServerUptime() method
 
-        /** Method to get the user name of the client that calls the method.
-         * Method returns the instance of the username for that client.
+        /** Method to get the user name of the {@link ClientInstance Client}
+         * that calls the method. Method returns the instance of the
+         * username for that client.
          * @return username of the client */
         private String getUsrName(){
             return usrName;
         } // end of getUsrName() method
 
         /** Method to get the number of users online.
-         * Method returns the size of the HashSet holding each username.
+         * Method returns the size of the {@link #usrNameSet usrNameSet}
          * @return Size of HashSet storing each username. */
         private int getUsrNum(){
             return usrNameSet.size();
@@ -368,9 +371,9 @@ public class Server {
          * Method takes input through the {@link #serverReader serverReader}
          * and checks that username is unique against those already
          * stored in the {@link Server#usrNameSet usrNameSet}. It then
-         * {@link #broadcastMessage broadcasts a message} to alert all users
-         * that a new user is online and stores the system time in
-         * {@link #clientChatroomTime clientChatroomTime} */
+        * {@link #broadcastMessage(String, MultipleServer) broadcasts a message}
+         * to alert all users that a new user is online and stores the system time
+         * in {@link #clientChatroomTime clientChatroomTime} */
         private void setUsrName(){
 
             // --- do-while loop to ask for username and check that

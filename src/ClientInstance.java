@@ -2,6 +2,9 @@
 import java.io.*;
 import java.net.*;
 
+/** Class that implements {@link Runnable Runnable} and
+ * connects the Client to the {@link Server Server} before
+ * handling the sending of messages. */
 class ClientInstance implements Runnable {
 
     // ----- FIELDS ----- //
@@ -43,7 +46,7 @@ class ClientInstance implements Runnable {
     /** Method override that connects to {@link Server Server} via a
      * {@link Socket Socket}. Method then starts a
      * {@link ServerListener ServerListener} thread and calls the
-     * {@link #sendMessage sendMessage} method. */
+     * {@link #sendMessage() sendMessage} method. */
     public void run(){
         try{
             Socket socketConnect = new Socket(ipAddr, portNum);
