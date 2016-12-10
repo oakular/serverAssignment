@@ -73,7 +73,7 @@ class ClientInstance implements Runnable {
      * Method reads from Standard Input and writes to the {@link Socket Socket}
      * where the Client is connected to the {@link Server Server}.
      * Methd then flushes the buffers of {@link #clientWriter clientWriter}
-     * to ensure message is written to the output stream. */
+     * to ensure message is sent to the {@link Server Server}. */
     private void sendMessage(){
         String msg;
 
@@ -91,19 +91,23 @@ class ClientInstance implements Runnable {
         System.exit(0);
     } // end of sendMessage() method
 
+    /** Class that extends the {@link Thread Thread} class and uses
+     * a {@link BufferedReader BufferedReader} to listen for messages
+     * from the {@link Server Server}. */
     class ServerListener extends Thread {
 
         // ----- FIELDS ----- //
-        /** BufferedReader to read input from Server */
+        /** {@link BufferedReader BufferedReader} to read input from Server. */
         private BufferedReader clientReader;
 
-        /** Empty Constructor to create ServerListener object */
+        /** Empty Constructor to create ServerListener object. */
         public ServerListener(){
 
         } // end of CONSTRUCTOR
 
-        /** Method override that continually listens for output from
-         * the server and displays it on standard output. */
+        /** Method override that uses the {@link #clientReader clientReader}
+         * to continually listen for output from the {@link Server Server}
+         * and display it on standard output. */
         public void run(){
             String serverMsg;
 
@@ -130,5 +134,7 @@ class ClientInstance implements Runnable {
                 System.err.println("Error when listening to server");
             } // end of IOException lncatch
         } // end of run() method
+
     } // end of ServerListener Class
+
 } // end of ClientInstance Class
