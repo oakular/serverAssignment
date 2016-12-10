@@ -5,9 +5,23 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.io.*;
 
+/** Server class that allows for clients to connect to the central server.
+ * Each new connection is started as a new thread via the nested class:
+ * {@link MultipleServer MultipleServer}. The Server class has data structures
+ * to store usernames and a reference to each client via the {@link HashSet HashSet}
+ * and {@link ArrayList ArrayList} classes respectively. */
 public class Server {
+    /** {@link HashSet HashSet} to to the usernames of each
+     * client; ensuring they are unique */
     private static HashSet<String> usrNameSet = new HashSet<String>();
+
+    /** {@link ArrayList ArrayList} of each client for use in
+     * message broadcasting */
     private static ArrayList<MultipleServer> clientList = new ArrayList<MultipleServer>();
+
+    /** Long constant that stores the system time upon Server startup via the
+     * {@link System#currentTimeMillis() currentTimeMillis()} method in the
+     * {@link System System} class. Used to calculate Server uptime. */
     final static private long SERVER_START_TIME = System.currentTimeMillis();
 
     /** Empty Constructor to create Server object.
@@ -17,6 +31,10 @@ public class Server {
 
     } // end of CONSTRUCTOR
 
+    /** Main method that throws {@link IOException IOException}.
+     * Method sets up a {@link ServerSocket ServerSocket} for new
+     * connections to the Server and upon new connections instantiates
+     * new {@link MultipleServer MultipleServer} threads and starts them. */
     public static void main(String[] args) throws IOException {
         final int PORT_NUM;
 
@@ -36,12 +54,17 @@ public class Server {
             System.err.println("Unable to reach port " + PORT_NUM);
             System.exit(-1);
         } // end of IOException catch
-
     } // end of main() method
 
+    /** Method to cycle through online clients and broadcast messages.
+     * The method iterates through the {@link #clientList clientList} and
+     * does not broadcast the message to the {@link ClientInstance ClientInstance}
+     * that was passed as a parameter.
+     * @param MSG - Message to be broadcast to other clients
+     * @param BCASTER - The client that is sending the message (usually
+     * the client calling the method) */
     private static void broadcastMessage(
                 String MSG, final MultipleServer BCASTER){
-
         // --- for loop to iterate through all other users
         // online
         for(int i=0; i < clientList.size(); i++){
@@ -52,11 +75,32 @@ public class Server {
     } // end of broadcastMessage() method
 
     private class MultipleServer extends Thread {
+
+        /** {@link Socket Socket} constant that stores the socket value
+         * of the {@link ClientInstance ClientInstance} that is connecting
+         * to the {@link Server Server}. */
         private final Socket MULTISOCKET;
+
+        /** Long field that is used to store the system time when the
+         * {@link ClientInstance ClientInstance} enters the chatroom.
+         * System time is calculated via the
+         * {@link System#currentTimeMillis() currentTimeMillis} in the
+         * {@link System System} class. */
         private long clientChatroomTime;
+
+        /** {@link PrintWriter PrintWriter} that is used to write messages
+         * to clients. */
         private PrintWriter serverWriter;
+
+        /** {@link BufferedReader BufferedReader} that is used to read messages
+         * from clients. */
         private BufferedReader serverReader;
+
+        /** {@link String String} field that stores the username of the client. */
         private String usrName;
+
+        /** Boolean to be used to allow closing of I/O streams and allow
+         * for graceful disconnect from {@link Server Server}. */
         private boolean finished = false;
 
         public MultipleServer(Socket multiSocket, Server outerServer){
@@ -141,7 +185,8 @@ public class Server {
             switch(CMD){
                 case ";cut": // show client uptime
                 case ";client_ut":
-                    serverWriter.println("Time in chatroom: " + getClientChatroomTime() + " seconds");
+                    serverWriter.println("Time in chatroom: "
+                            + getClientChatroomTime() + " seconds");
                     break;
                 case ";e": // user requested exit
                 case ";exit":
@@ -160,7 +205,8 @@ public class Server {
                     break;
                 case ";ut": // user requested uptime status
                 case ";uptime":
-                    serverWriter.println("Server Uptime: " + getServerUptime() + " seconds");
+                    serverWriter.println("Server Uptime: "
+                            + getServerUptime() + " seconds");
                     break;
                 case ";un": // user requested number of online users
                 case ";usr_num":
@@ -274,28 +320,27 @@ public class Server {
          * is unique against those already stored in the
          * {@link HashSet HashSet}. */
         private void setUsrName(){
-            String clientUsrName = null;
 
             // --- do-while loop to ask for username and check that
             // it is unique against other entries in the HashSet
             do{
-                serverWriter.println("Please enter a username:- ");
+                serverWriter.println("Please enter a unique username:- ");
                 System.out.println("Requesting username");
                 serverWriter.flush();
                 try{
-                    clientUsrName = serverReader.readLine();
+                    usrName = serverReader.readLine();
                 }catch(IOException e){
                     System.err.println("I/O Error at Username Creation");
                     e.printStackTrace();
                 } // end of IOException catch
-            }while(Server.usrNameSet.add(clientUsrName) == false && clientUsrName != null);
+            }while(Server.usrNameSet.add(usrName) == false && usrName != null);
 
-            usrName = clientUsrName;
             broadcastMessage("is online",this);
             System.out.println("User added: " + this.usrName);
 
             // adds system time for when client entered the chatroom
             clientChatroomTime = System.currentTimeMillis();
+
             serverWriter.println("--- Entered Chatroom ---\n");
             serverWriter.println("type \';h\' for help\n\n");
         } // end of setUsrName() method
