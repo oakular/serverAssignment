@@ -77,12 +77,12 @@ public class Server {
     private class MultipleServer extends Thread {
 
         /** {@link Socket Socket} constant that stores the socket value
-         * of the {@link ClientInstance ClientInstance} that is connecting
+         * of the {@link ClientInstance Client} that is connecting
          * to the {@link Server Server}. */
         private final Socket MULTISOCKET;
 
         /** Long field that is used to store the system time when the
-         * {@link ClientInstance ClientInstance} enters the chatroom.
+         * {@link ClientInstance Client} enters the chatroom.
          * System time is calculated via the
          * {@link System#currentTimeMillis() currentTimeMillis} in the
          * {@link System System} class. */
@@ -107,7 +107,12 @@ public class Server {
             this.MULTISOCKET = multiSocket;
         } // end of CONSTRUCTOR
 
-        public void run(){
+        /** Method override of the {@link Thread#run run} method in the
+         * {@link Thread Thread} class. Method sets up the I/O streams via
+         * the {@link PrintWriter PrintWriter} and {@link BufferedReader BufferedReader}
+         * classes and then calls {@link #setUsrName() setUsrName} and
+         * {@link #readFromClient() readFromClient} methods. */
+         public void run(){
             try{
                 // setup I/O streams to be able to send/receive data from client
                 serverWriter = new PrintWriter(MULTISOCKET.getOutputStream(), true);
@@ -118,8 +123,10 @@ public class Server {
                 serverWriter.println("----- Connected to Server ---");
                 serverWriter.flush();
 
+                // set unique username
                 setUsrName();
 
+                // continually read from client
                 readFromClient();
 
             } catch (IOException e){
@@ -131,6 +138,13 @@ public class Server {
         // MESSAGE HANDLING
         // ----------------
 
+        /** Method to read from clients output stream and then pass
+         * the received message onto the message parsing methods.
+         * Method reads from {@link ClientInstance Client} via the
+         * {@link #serverReader serverReader} and only passes not-null
+         * messages onto the {@link #parseClientMsg() parseClientMsg} method.
+         * If the message is null then the {@link #logOut() logOut} method
+         * is called */
         private void readFromClient(){
             String clientMsg = "";
 
@@ -158,6 +172,12 @@ public class Server {
             } // end of while loop
         } // end of readFromClient() method
 
+        /** Method to take message as a parameter and detect if it is
+         * a broadcast message or a server command. Method looks at the
+         * first character of the message and if it is a command message calls
+         * the {@link #parseClientCommand parseClientCommand} method. Otherwise
+         * it calls the {@link #broadcastMessage() broadcastMessage} method.
+         * @param MSG - The message to be parsed. */
         private void parseClientMsg(final String MSG){
             // ensures only parsing of non-empty strings
             if(MSG.length() != 0){
@@ -181,6 +201,12 @@ public class Server {
             serverWriter.flush();
         } // end of printMessage() method
 
+        /** Method to parse the command message passed as a parameter
+         * and call methods to respond to the {@link ClientInstance Client's}
+         * request. Method uses a switch statement to see which command the
+         * command message parameter matches with before calling the method
+         * nested within the matching case.
+         * @param CMD - The command message to be parsed. */
         private void parseClientCommand(final String CMD){
             switch(CMD){
                 case ";cut": // show client uptime
@@ -215,12 +241,20 @@ public class Server {
                 default:
                     serverWriter.println("unknown command: type \';h\' for help");
             } // end of switch statement
-        } // end of clientCommand() method
+        } // end of parseClientCommand() method
 
         // ----------------
         //  LOGGING OUT
         // ----------------
 
+        /** Method to close I/O streams and stop continual listening
+         * for input from {@link ClientInstance Client}. Method uses the
+         * {@link #close() close} method in the {@link PrintWriter PrintWriter}
+         * and {@link BufferedReader BufferedReader} classes to close the I/O
+         * streams before closing the {@link #MULTISOCKET MULTISOCKET} and
+         * removing the {@link ClientInstance Client's} username from the
+         * {@link Server#usrNameSet usrNameSet} in the {@link Server Server}
+         * class */
         private void logOut(){
             // close the I/0 streams
             try{
@@ -249,6 +283,14 @@ public class Server {
         //     GETTERS
         // ----------------
 
+        /** Method to calculate the length of time the
+         * {@link ClientInstance Client} has been connected to the
+         * chatroom for. Method takes the current system time via the
+         * {@link System#currentTimeMillis() currentTimeMillis} method
+         * and substracts the {@link #clientChatroomTime clientChatroomTime}.
+         * It then divides the resulting number by 1000 to format the time into
+         * seconds for readability.
+         * @return The length of time the Client has spent in the chatroom */
         private double getClientChatroomTime(){
             return (System.currentTimeMillis() - clientChatroomTime) / 1000;
         } // end of getClientChatroomTime() method
