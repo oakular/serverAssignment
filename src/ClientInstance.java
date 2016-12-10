@@ -5,15 +5,26 @@ import java.net.*;
 class ClientInstance implements Runnable {
 
     // ----- FIELDS ----- //
-    /** PrintWriter to print output from the Server */
+    /** {@link PrintWriter PrintWriter} to print output from the
+     * {@link Server Server}. */
     private PrintWriter clientWriter;
-    /** StreamReader to read input from user */
+
+    /** {@link InputStreamReader InputStreamReader} to read input from user. */
     private InputStreamReader clientStreamReader;
-    /** BufferedReader to read input from standard input */
+
+    /** {@link BufferedReader BufferedReader} to read input from
+     * standard input. */
     private BufferedReader clientInputReader;
+
+    /** Int field to store the port number of the {@link Server Server}. */
     private int portNum;
+
+    /** {@link InetAddress InetAddress} field to store the IP address of
+     * the {@link Server Server}. */
     private InetAddress ipAddr;
 
+    /** Boolean field that is set to true when {@link Server Server} or Client
+     * disconnects. */
     private boolean stop = false;
 
     /** Constructor to call within ClientMain class
@@ -29,9 +40,10 @@ class ClientInstance implements Runnable {
         } // end of UnknownHostException catch
     } // end of CONSTRUCTOR
 
-    /** Method override that connects to Server via a socket and sets up the
-     * I/O streams. Method then waits for commands to be passed to carry out
-     * other functions. */
+    /** Method override that connects to {@link Server Server} via a
+     * {@link Socket Socket}. Method then starts a
+     * {@link ServerListener ServerListener} thread and calls the
+     * {@link #sendMessage sendMessage} method. */
     public void run(){
         try{
             Socket socketConnect = new Socket(ipAddr, portNum);
@@ -58,9 +70,10 @@ class ClientInstance implements Runnable {
     } // end of run() method
 
     /** Method to send message to the server.
-     * Method reads from Standard Input and writes to the socket
-     * where client is connected to server. Flushes buffers to ensure
-     * message is written to output stream. */
+     * Method reads from Standard Input and writes to the {@link Socket Socket}
+     * where the Client is connected to the {@link Server Server}.
+     * Methd then flushes the buffers of {@link #clientWriter clientWriter}
+     * to ensure message is written to the output stream. */
     private void sendMessage(){
         String msg;
 
