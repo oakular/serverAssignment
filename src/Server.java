@@ -34,8 +34,10 @@ public class Server {
     /** Main method that throws {@link IOException IOException}.
      * Method sets up a {@link ServerSocket ServerSocket} for new
      * connections to the Server and upon new connections instantiates
-     * new {@link MultipleServer MultipleServer} threads and starts them. */
-    public static void main(String[] args) throws IOException {
+     * new {@link MultipleServer MultipleServer} threads and starts them.
+     * @param args - command line arguments passed to the Server on
+     * program start. */
+    public static void main(String[] args) {
         final int PORT_NUM;
 
         PORT_NUM = Integer.parseInt(args[0]);
@@ -46,7 +48,7 @@ public class Server {
             while(true){
                 Socket clientSocket = serverSocket.accept();
                 Server server = new Server(); // needed to create instance of inner class MultipleServer
-                Server.MultipleServer multiServer = server.new MultipleServer(clientSocket, server);
+                Server.MultipleServer multiServer = server.new MultipleServer(clientSocket);
                 clientList.add(multiServer);
                 clientList.get(clientList.size() - 1).start();
             } // end of while loop
@@ -106,7 +108,11 @@ public class Server {
          * for graceful disconnect from {@link Server Server}. */
         private boolean finished = false;
 
-        public MultipleServer(Socket multiSocket, Server outerServer){
+        /** Constructor to instantiate a MultipleServer object to handle
+         * message parsing and client entering and exiting the chatroom.
+         * @param multiSocket - the socket that the Client is connecting
+         * through. */
+        public MultipleServer(Socket multiSocket){
             this.MULTISOCKET = multiSocket;
         } // end of CONSTRUCTOR
 
@@ -258,12 +264,13 @@ public class Server {
 
         /** Method to close I/O streams and stop continual listening
          * for input from {@link ClientInstance Client}. Method uses the
-         * {@link #close() close} method in the {@link PrintWriter PrintWriter}
+         * {@link PrintWriter#close() close} method in the
+         * {@link PrintWriter PrintWriter}
          * and {@link BufferedReader BufferedReader} classes to close the I/O
          * streams before closing the {@link #MULTISOCKET MULTISOCKET} and
          * removing the {@link ClientInstance Client's} username from the
          * {@link Server#usrNameSet usrNameSet} in the {@link Server Server}
-         * class */
+         * class. */
         private void logOut(){
             // close the I/0 streams
             try{

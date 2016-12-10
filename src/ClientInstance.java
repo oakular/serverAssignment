@@ -32,7 +32,9 @@ class ClientInstance implements Runnable {
 
     /** Constructor to call within ClientMain class
      * and allows for thread to be started upon object
-     * of this class. */
+     * of this class.
+     * @param ipAddr - a String containing the IP address of the Server.
+     * @param portNum - a String containing the port number of the Server */
     public ClientInstance(String ipAddr, String portNum){
         this.portNum = Integer.parseInt(portNum);
         try{
